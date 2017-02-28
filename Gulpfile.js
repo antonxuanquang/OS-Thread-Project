@@ -5,9 +5,19 @@ var watch = require('gulp-watch')
 gulp.task('compile', shell.task([
   'clear',
   'make clean',
-  // 'make osp2a',
-  // './osp2a Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet, possimus! 2421',
-  // 'echo',
+  'make osp2a',
+  'echo',
+  'echo "Test case 1"',
+  './osp2a "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet, possimus! 2421"',
+  'echo',
+  'echo "Test case 2"',
+  './osp2a Lorem ipsum dolor "sit amet, consectetur" adipisicing elit. Amet, possimus! 2421',
+  'echo',
+  'echo "Test case 3"',
+  './osp2a Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet, possimus! 2421',
+  'echo',
+  'echo "Test case 4"',
+  './osp2a Lorem ipsum """""" 2421',
 ]))
 
 gulp.task('watch', function() {
