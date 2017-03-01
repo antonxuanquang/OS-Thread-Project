@@ -20,19 +20,21 @@ gulp.task('compile', shell.task([
   // './osp2a Lorem ipsum """""" 2421',
   'make osp2b',
   'echo',
-  './osp2b '  + 'part2_test/black_diagonal.txt '
+  './osp2b '  
+              // + 'part2_test/black_diagonal.txt '
               + 'part2_test/black_horizontal.txt '
-              + 'part2_test/black_rdiagonal.txt '
-              + 'part2_test/black_vertical.txt '
+              // + 'part2_test/black_rdiagonal.txt '
+              // + 'part2_test/black_vertical.txt '
 
-              + 'part2_test/red_diagonal.txt '
+              // + 'part2_test/red_diagonal.txt '
               + 'part2_test/red_horizontal.txt '
-              + 'part2_test/red_rdiagonal.txt '
-              + 'part2_test/red_vertical.txt '
+              // + 'part2_test/red_rdiagonal.txt '
+              // + 'part2_test/red_vertical.txt '
 
-              + 'part2_test/no_win1.txt '
-              + 'part2_test/no_win2.txt '
-              + 'part2_test/no_win3.txt ',
+              // + 'part2_test/no_win1.txt '
+              // + 'part2_test/no_win2.txt '
+              // + 'part2_test/no_win3.txt '
+              ,
 ]))
 
 gulp.task('watch', function() {
