@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <pthread.h>
 
 #define NUM_ROWS 6
 #define NUM_COLS 8
@@ -28,7 +30,10 @@ int checkVertical();
 int checkHorizontal();
 int returnWinner(char current);
 int checkDiagonalLine(int row, int column, int horizontal_step, int vertical_step);
-
+void *checkHorizontalThread(void *param);
+void *checkVerticalThread(void *param);
+void *checkDiagonalThread(void *param);
+void *checkRDiagonalThread (void *param);
 
 //*********************************************************
 //
@@ -36,6 +41,7 @@ int checkDiagonalLine(int row, int column, int horizontal_step, int vertical_ste
 //
 //*********************************************************
 char board[NUM_ROWS][NUM_COLS];
+pthread_mutex_t mutex;
 
 //*********************************************************
 //
@@ -72,12 +78,6 @@ int main(int argc, char *argv[]) {
 			board[row][NUM_COLS - 1] = '\0';
 			row++;
 		}
-
-		// printf("%s\n", argv[i]);
-		// for (row = 0; row < NUM_ROWS; row++) {
-		// 	printf("%s\n", board[row]);
-		// }
-		// printf("\n\n");
 
 		int result = checkBoard(NUM_ROWS, NUM_COLS, board);
 		if (result == 0) {
@@ -142,6 +142,17 @@ int checkDiagonalLine(int row, int column, int horizontal_step, int vertical_ste
 }
 
 int checkDiagonal() {
+
+	pthread_t tid;
+	int result = 0;
+	void *thread_result;
+	pthread_create(&tid, NULL, checkDiagonalThread, NULL);
+	pthread_join(tid, &thread_result);
+	result = (int) thread_result;
+	return result;
+}
+void *checkDiagonalThread(void *param) {
+	
 	int row;
 	int column = 0;
 	int result = 0;
@@ -152,12 +163,21 @@ int checkDiagonal() {
 	for (column = 0; column < NUM_COLS - 4; column++) {
 		result = result | checkDiagonalLine(row, column, 1, 1);
 	}
-	return result;
+	return (void *) result;
 }
 
 int checkRDiagonal() {
+	pthread_t tid;
 	int result = 0;
+	void *thread_result;
+	pthread_create(&tid, NULL, checkRDiagonalThread, NULL);
+	pthread_join(tid, &thread_result);
+	result = (int) thread_result;
+	return result;
+}
 
+void *checkRDiagonalThread (void *param) {
+	int result = 0;
 	int row;
 	int column = 0;
 	for (row = NUM_ROWS - 1; row >= 3; row--) {
@@ -167,56 +187,85 @@ int checkRDiagonal() {
 	for (column = 1; column < NUM_COLS - 4; column++) {
 		result = result | checkDiagonalLine(row, column, 1, -1);
 	}
-	return result;
+	return (void *) result;
 }
 
 int checkHorizontal() {
 	int row;
+	pthread_t tid[NUM_ROWS];
+	pthread_attr_t attr[NUM_ROWS];
+	int result = 0;
+	void *thread_result;
 	for (row = 0; row < NUM_ROWS; row++) {
-		int column;
-		char current = board[row][0];
-		int count = 1;
-		for (column = 1; column < NUM_COLS && count != 4; column++) {
-			if (current != board[row][column]) {
-				current = board[row][column];
-				count = 1;
-			} else {
-				if (current != '.') {
-					count++;
-				}
-			}
-		}
-		if (count == 4) {
-			return returnWinner(current);
-		}
+		pthread_attr_init(&attr[row]);
+		pthread_create(&tid[row], &attr[row], checkHorizontalThread, (void *) row);
 	}
-	return 0;
+
+	for (row = 0; row < NUM_ROWS; row++) {
+		pthread_join(tid[row], &thread_result);
+		result = result | ((int) thread_result);
+	}
+	return result;
 }
 
 void *checkHorizontalThread(void *param) {
-	
+	int row = (int) param;
+	int column;
+	char current = board[row][0];
+	int count = 1;
+	for (column = 1; column < (NUM_COLS - 1) && count != 4; column++) {
+		if (current != board[row][column]) {
+			current = board[row][column];
+			count = 1;
+		} else {
+			if (current != '.') {
+				count++;
+			}
+		}
+	}
+
+	if (count == 4) {
+		return (void *) returnWinner(current);
+	}
+	return (void *) 0;
 }
 
 int checkVertical() {
 	int column;
+	pthread_t tid[NUM_COLS - 1];
+	pthread_attr_t attr[NUM_COLS - 1];
+	int result = 0;
+	void *thread_result;
 	for (column = 0; column < NUM_COLS - 1; column++) {
-		int row;
-		char current = board[0][column];
-		int count = 1;
-		for (row = 1; row < NUM_ROWS && count != 4; row++) {
-			if (current != board[row][column]) {
-				current = board[row][column];
-				count = 1;
-			} else {
-				if (current != '.') {
-					count++;
-				}
-			}
-		}
-		if (count == 4) {
-			return returnWinner(current);
-		}
+		pthread_attr_init(&attr[column]);
+		pthread_create(&tid[column], &attr[column], checkVerticalThread, (void *) column);
 	}
 
-	return 0;
+	for (column = 0; column < NUM_COLS - 1; column++) {
+		pthread_join(tid[column], &thread_result);
+		result = result | ((int) thread_result);
+	}
+
+	return result;
+}
+
+void *checkVerticalThread(void *param) {
+	int column = (int) param;
+	char current = board[0][column];
+	int count = 1;
+	int row;
+	for (row = 1; row < NUM_ROWS && count != 4; row++) {
+		if (current != board[row][column]) {
+			current = board[row][column];
+			count = 1;
+		} else {
+			if (current != '.') {
+				count++;
+			}
+		}
+	}
+	if (count == 4) {
+		return (void *) returnWinner(current);
+	}
+	return (void *) 0;
 }

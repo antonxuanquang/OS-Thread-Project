@@ -9,9 +9,9 @@
 .SUFFIXES: .h .c .l .o
 
 CC = gcc
-CFLAGS = -g
+CFLAGS = -w -g
 LEX = flex
-LIBS = -lfl -lpthread
+LIBS = -lfl -lpthread 
 RM = /bin/rm
 RMFLAGS = -f
 
